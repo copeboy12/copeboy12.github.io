@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nightfall Arena</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <canvas id="game" width="1280" height="720" aria-label="Nightfall Arena game canvas"></canvas>
+
+    <section class="hud hud-top" aria-live="polite">
+      <div>
+        <span class="label">Time</span>
+        <strong id="time">00:00</strong>
+      </div>
+      <div>
+        <span class="label">Level</span>
+        <strong id="level">1</strong>
+      </div>
+      <div>
+        <span class="label">Kills</span>
+        <strong id="kills">0</strong>
+      </div>
+    </section>
+
+    <section class="hud hud-bars">
+      <div class="bar-row">
+        <span>HP</span>
+        <div class="bar"><i id="hpBar"></i></div>
+      </div>
+      <div class="bar-row">
+        <span>XP</span>
+        <div class="bar xp"><i id="xpBar"></i></div>
+      </div>
+    </section>
+
+    <section id="upgradePanel" class="upgrade-panel hidden">
+      <h1>Choose an Upgrade</h1>
+      <div id="upgradeChoices" class="upgrade-choices"></div>
+    </section>
+
+    <section id="startPanel" class="start-panel">
+      <h1>Nightfall Arena</h1>
+      <p>Survive the tilted ruins. Move with WASD or arrow keys. Your hunter attacks automatically.</p>
+      <button id="startButton" type="button">Start Run</button>
+    </section>
+
+    <section id="endPanel" class="start-panel hidden">
+      <h1 id="endTitle">Run Over</h1>
+      <p id="endStats"></p>
+      <button id="restartButton" type="button">Run Again</button>
+    </section>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
