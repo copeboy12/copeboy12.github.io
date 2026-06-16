@@ -1,4 +1,4 @@
-window.NIGHTFALL_CONFIG = {
+﻿window.NIGHTFALL_CONFIG = {
   "world": {
     "width": 3600,
     "height": 3600

@@ -16,7 +16,7 @@ const restartButton = document.getElementById("restartButton");
 
 const defaultConfig = {
   world: { width: 3600, height: 3600 },
-  projection: { tilt: 0.56, anchorY: 455 },
+  projection: { tilt: 0.56, anchorY: 400 },
   player: {
     radius: 24,
     speed: 245,
