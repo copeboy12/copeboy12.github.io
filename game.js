@@ -17,7 +17,7 @@ const restartButton = document.getElementById("restartButton");
 const keys = new Set();
 const world = { width: 3600, height: 3600 };
 const camera = { x: world.width / 2, y: world.height / 2 };
-const projection = { tilt: 0.56, horizon: 92 };
+const projection = { tilt: 0.56, anchorY: 390 };
 
 let player;
 let enemies;
@@ -375,7 +375,7 @@ function drawSky() {
 
 function drawArena() {
   ctx.save();
-  ctx.translate(canvas.width / 2, projection.horizon);
+  ctx.translate(canvas.width / 2, projection.anchorY);
   ctx.scale(1, projection.tilt);
   ctx.translate(-camera.x, -camera.y);
 
@@ -519,7 +519,7 @@ function drawProp(prop) {
 function project(x, y) {
   return {
     x: canvas.width / 2 + (x - camera.x),
-    y: projection.horizon + (y - camera.y) * projection.tilt
+    y: projection.anchorY + (y - camera.y) * projection.tilt
   };
 }
 
