@@ -17,7 +17,7 @@ const restartButton = document.getElementById("restartButton");
 const keys = new Set();
 const world = { width: 3600, height: 3600 };
 const camera = { x: world.width / 2, y: world.height / 2 };
-const projection = { tilt: 0.56, anchorY: 390 };
+const projection = { tilt: 0.56, anchorY: 520 };
 
 let player;
 let enemies;
