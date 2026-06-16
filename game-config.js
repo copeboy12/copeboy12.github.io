@@ -4,8 +4,8 @@
     "height": 3600
   },
   "projection": {
-    "tilt": 0.56,
-    "anchorY": 455
+    "tilt": 1.56,
+    "anchorY": 390
   },
   "player": {
     "radius": 24,
