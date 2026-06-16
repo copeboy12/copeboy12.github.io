@@ -14,10 +14,70 @@ const endStats = document.getElementById("endStats");
 const startButton = document.getElementById("startButton");
 const restartButton = document.getElementById("restartButton");
 
+const defaultConfig = {
+  world: { width: 3600, height: 3600 },
+  projection: { tilt: 0.56, anchorY: 455 },
+  player: {
+    radius: 24,
+    speed: 245,
+    maxHp: 100,
+    nextXp: 8,
+    attackCooldown: 0.62,
+    shots: 1,
+    damage: 14,
+    pickupRange: 95
+  },
+  wave: {
+    secondsPerWave: 35,
+    spawnBaseSeconds: 1.35,
+    spawnReductionPerWave: 0.08,
+    spawnMinimumSeconds: 0.18,
+    baseSpawnCount: 2,
+    maxExtraSpawnCount: 8
+  },
+  enemy: {
+    spawnDistanceMin: 760,
+    spawnDistanceRandom: 380,
+    bruteChanceBase: 0.1,
+    bruteChancePerWave: 0.025,
+    bruteChanceMax: 0.34,
+    shadeRadius: 21,
+    shadeHpBase: 24,
+    shadeHpPerWave: 4,
+    shadeSpeedBase: 118,
+    shadeSpeedPerWave: 4,
+    shadeDamage: 9,
+    shadeXp: 1,
+    bruteRadius: 30,
+    bruteHpBase: 58,
+    bruteHpPerWave: 9,
+    bruteSpeedBase: 82,
+    bruteSpeedPerWave: 3,
+    bruteDamage: 17,
+    bruteXp: 4
+  },
+  weapon: {
+    projectileSpeed: 650,
+    projectileRadius: 9,
+    projectileLife: 1.15,
+    multiShotSpread: 0.14
+  },
+  upgrades: {
+    quickHandsMultiplier: 0.82,
+    quickHandsMinimumCooldown: 0.18,
+    sharpenedSteelMultiplier: 1.35,
+    longStepBonus: 30,
+    magnetCharmBonus: 58,
+    ironHeartMaxHpBonus: 18,
+    ironHeartHeal: 34
+  }
+};
+
 const keys = new Set();
-const world = { width: 3600, height: 3600 };
+const config = structuredCloneSafe(defaultConfig);
+const world = structuredCloneSafe(defaultConfig.world);
 const camera = { x: world.width / 2, y: world.height / 2 };
-const projection = { tilt: 0.56, anchorY: 455 };
+const projection = structuredCloneSafe(defaultConfig.projection);
 
 let player;
 let enemies;
@@ -28,58 +88,95 @@ let props;
 let game;
 let lastTime = 0;
 
-const upgrades = [
-  {
-    name: "Twin Daggers",
-    desc: "Fire one extra blade every attack cycle.",
-    apply: () => player.shots += 1
-  },
-  {
-    name: "Quick Hands",
-    desc: "Attack cooldown becomes shorter.",
-    apply: () => player.attackCooldown = Math.max(0.18, player.attackCooldown * 0.82)
-  },
-  {
-    name: "Sharpened Steel",
-    desc: "Projectile damage increases by 35%.",
-    apply: () => player.damage = Math.ceil(player.damage * 1.35)
-  },
-  {
-    name: "Long Step",
-    desc: "Move faster through the arena.",
-    apply: () => player.speed += 30
-  },
-  {
-    name: "Magnet Charm",
-    desc: "Pull experience gems from farther away.",
-    apply: () => player.pickupRange += 58
-  },
-  {
-    name: "Iron Heart",
-    desc: "Heal now and increase max HP.",
-    apply: () => {
-      player.maxHp += 18;
-      player.hp = Math.min(player.maxHp, player.hp + 34);
+let upgrades = buildUpgrades();
+
+function structuredCloneSafe(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function mergeConfig(target, source) {
+  for (const [key, value] of Object.entries(source || {})) {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      if (!target[key] || typeof target[key] !== "object") target[key] = {};
+      mergeConfig(target[key], value);
+    } else {
+      target[key] = value;
     }
   }
-];
+  return target;
+}
+
+async function loadConfig() {
+  if (window.NIGHTFALL_CONFIG) mergeConfig(config, window.NIGHTFALL_CONFIG);
+
+  try {
+    const response = await fetch(`game-config.json?v=${Date.now()}`, { cache: "no-store" });
+    if (response.ok) mergeConfig(config, await response.json());
+  } catch (error) {
+    console.warn("Using built-in game config.", error);
+  }
+
+  Object.assign(world, config.world);
+  Object.assign(projection, config.projection);
+  camera.x = world.width / 2;
+  camera.y = world.height / 2;
+  upgrades = buildUpgrades();
+}
+
+function buildUpgrades() {
+  return [
+    {
+      name: "Twin Daggers",
+      desc: "Fire one extra blade every attack cycle.",
+      apply: () => player.shots += 1
+    },
+    {
+      name: "Quick Hands",
+      desc: "Attack cooldown becomes shorter.",
+      apply: () => player.attackCooldown = Math.max(config.upgrades.quickHandsMinimumCooldown, player.attackCooldown * config.upgrades.quickHandsMultiplier)
+    },
+    {
+      name: "Sharpened Steel",
+      desc: "Projectile damage increases by 35%.",
+      apply: () => player.damage = Math.ceil(player.damage * config.upgrades.sharpenedSteelMultiplier)
+    },
+    {
+      name: "Long Step",
+      desc: "Move faster through the arena.",
+      apply: () => player.speed += config.upgrades.longStepBonus
+    },
+    {
+      name: "Magnet Charm",
+      desc: "Pull experience gems from farther away.",
+      apply: () => player.pickupRange += config.upgrades.magnetCharmBonus
+    },
+    {
+      name: "Iron Heart",
+      desc: "Heal now and increase max HP.",
+      apply: () => {
+        player.maxHp += config.upgrades.ironHeartMaxHpBonus;
+        player.hp = Math.min(player.maxHp, player.hp + config.upgrades.ironHeartHeal);
+      }
+    }
+  ];
+}
 
 function resetGame() {
   player = {
     x: world.width / 2,
     y: world.height / 2,
-    radius: 24,
-    speed: 245,
-    hp: 100,
-    maxHp: 100,
+    radius: config.player.radius,
+    speed: config.player.speed,
+    hp: config.player.maxHp,
+    maxHp: config.player.maxHp,
     xp: 0,
-    nextXp: 8,
+    nextXp: config.player.nextXp,
     level: 1,
     attackTimer: 0,
-    attackCooldown: 0.62,
-    shots: 1,
-    damage: 14,
-    pickupRange: 95,
+    attackCooldown: config.player.attackCooldown,
+    shots: config.player.shots,
+    damage: config.player.damage,
+    pickupRange: config.player.pickupRange,
     hurtTimer: 0,
     facing: 1
   };
@@ -131,7 +228,7 @@ function loop(now) {
 
 function update(dt) {
   game.elapsed += dt;
-  game.wave = 1 + Math.floor(game.elapsed / 35);
+  game.wave = 1 + Math.floor(game.elapsed / config.wave.secondsPerWave);
   player.hurtTimer = Math.max(0, player.hurtTimer - dt);
 
   movePlayer(dt);
@@ -171,27 +268,28 @@ function spawnEnemies(dt) {
   game.spawnTimer -= dt;
   if (game.spawnTimer > 0) return;
 
-  const count = 2 + Math.min(8, game.wave);
+  const count = config.wave.baseSpawnCount + Math.min(config.wave.maxExtraSpawnCount, game.wave);
   for (let i = 0; i < count; i++) spawnEnemy();
-  game.spawnTimer = Math.max(0.18, 1.35 - game.wave * 0.08);
+  game.spawnTimer = Math.max(config.wave.spawnMinimumSeconds, config.wave.spawnBaseSeconds - game.wave * config.wave.spawnReductionPerWave);
 }
 
 function spawnEnemy() {
   const angle = Math.random() * Math.PI * 2;
-  const distance = 760 + Math.random() * 380;
+  const distance = config.enemy.spawnDistanceMin + Math.random() * config.enemy.spawnDistanceRandom;
   const x = clamp(player.x + Math.cos(angle) * distance, 50, world.width - 50);
   const y = clamp(player.y + Math.sin(angle) * distance, 50, world.height - 50);
-  const brute = Math.random() < Math.min(0.1 + game.wave * 0.025, 0.34);
+  const brute = Math.random() < Math.min(config.enemy.bruteChanceBase + game.wave * config.enemy.bruteChancePerWave, config.enemy.bruteChanceMax);
+  const hp = brute ? config.enemy.bruteHpBase + game.wave * config.enemy.bruteHpPerWave : config.enemy.shadeHpBase + game.wave * config.enemy.shadeHpPerWave;
 
   enemies.push({
     x,
     y,
-    radius: brute ? 30 : 21,
-    hp: brute ? 58 + game.wave * 9 : 24 + game.wave * 4,
-    maxHp: brute ? 58 + game.wave * 9 : 24 + game.wave * 4,
-    speed: brute ? 82 + game.wave * 3 : 118 + game.wave * 4,
-    damage: brute ? 17 : 9,
-    xp: brute ? 4 : 1,
+    radius: brute ? config.enemy.bruteRadius : config.enemy.shadeRadius,
+    hp,
+    maxHp: hp,
+    speed: brute ? config.enemy.bruteSpeedBase + game.wave * config.enemy.bruteSpeedPerWave : config.enemy.shadeSpeedBase + game.wave * config.enemy.shadeSpeedPerWave,
+    damage: brute ? config.enemy.bruteDamage : config.enemy.shadeDamage,
+    xp: brute ? config.enemy.bruteXp : config.enemy.shadeXp,
     type: brute ? "brute" : "shade",
     wobble: Math.random() * Math.PI * 2
   });
@@ -223,15 +321,15 @@ function autoAttack(dt) {
     .slice(0, player.shots);
 
   targets.forEach((target, index) => {
-    const angle = Math.atan2(target.y - player.y, target.x - player.x) + (index - (targets.length - 1) / 2) * 0.14;
+    const angle = Math.atan2(target.y - player.y, target.x - player.x) + (index - (targets.length - 1) / 2) * config.weapon.multiShotSpread;
     projectiles.push({
       x: player.x,
       y: player.y,
-      vx: Math.cos(angle) * 650,
-      vy: Math.sin(angle) * 650,
-      radius: 9,
+      vx: Math.cos(angle) * config.weapon.projectileSpeed,
+      vy: Math.sin(angle) * config.weapon.projectileSpeed,
+      radius: config.weapon.projectileRadius,
       damage: player.damage,
-      life: 1.15,
+      life: config.weapon.projectileLife,
       spin: Math.random() * Math.PI
     });
     slashEffects.push({ x: player.x, y: player.y, angle, life: 0.16, maxLife: 0.16 });
@@ -575,6 +673,8 @@ window.addEventListener("keyup", event => {
 
 startButton.addEventListener("click", resetGame);
 restartButton.addEventListener("click", resetGame);
-updateHud();
-drawSky();
-drawArena();
+loadConfig().then(() => {
+  updateHud();
+  drawSky();
+  drawArena();
+});

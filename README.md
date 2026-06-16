@@ -17,3 +17,6 @@ Open `index.html` through GitHub Pages.
 - `index.html` - page and UI
 - `style.css` - layout and HUD styling
 - `game.js` - gameplay, rendering, upgrades, waves
+- `game-config.json` - editable game values used by the builder
+- `game-config.js` - browser-friendly copy of the editable config
+- `NightfallArenaBuilder.exe` - Windows editor for changing the config and pushing Pages updates

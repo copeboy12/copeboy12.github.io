@@ -1,0 +1,64 @@
+window.NIGHTFALL_CONFIG = {
+  "world": {
+    "width": 3600,
+    "height": 3600
+  },
+  "projection": {
+    "tilt": 0.56,
+    "anchorY": 455
+  },
+  "player": {
+    "radius": 24,
+    "speed": 245,
+    "maxHp": 100,
+    "nextXp": 8,
+    "attackCooldown": 0.62,
+    "shots": 1,
+    "damage": 14,
+    "pickupRange": 95
+  },
+  "wave": {
+    "secondsPerWave": 35,
+    "spawnBaseSeconds": 1.35,
+    "spawnReductionPerWave": 0.08,
+    "spawnMinimumSeconds": 0.18,
+    "baseSpawnCount": 2,
+    "maxExtraSpawnCount": 8
+  },
+  "enemy": {
+    "spawnDistanceMin": 760,
+    "spawnDistanceRandom": 380,
+    "bruteChanceBase": 0.1,
+    "bruteChancePerWave": 0.025,
+    "bruteChanceMax": 0.34,
+    "shadeRadius": 21,
+    "shadeHpBase": 24,
+    "shadeHpPerWave": 4,
+    "shadeSpeedBase": 118,
+    "shadeSpeedPerWave": 4,
+    "shadeDamage": 9,
+    "shadeXp": 1,
+    "bruteRadius": 30,
+    "bruteHpBase": 58,
+    "bruteHpPerWave": 9,
+    "bruteSpeedBase": 82,
+    "bruteSpeedPerWave": 3,
+    "bruteDamage": 17,
+    "bruteXp": 4
+  },
+  "weapon": {
+    "projectileSpeed": 650,
+    "projectileRadius": 9,
+    "projectileLife": 1.15,
+    "multiShotSpread": 0.14
+  },
+  "upgrades": {
+    "quickHandsMultiplier": 0.82,
+    "quickHandsMinimumCooldown": 0.18,
+    "sharpenedSteelMultiplier": 1.35,
+    "longStepBonus": 30,
+    "magnetCharmBonus": 58,
+    "ironHeartMaxHpBonus": 18,
+    "ironHeartHeal": 34
+  }
+};
