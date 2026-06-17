@@ -32,6 +32,8 @@ namespace NightfallArenaBuilder
             Height = 760;
             MinimumSize = new Size(860, 560);
             StartPosition = FormStartPosition.CenterScreen;
+            BackColor = Color.White;
+            Font = new Font("Segoe UI", 10);
 
             BuildUi();
             LoadConfig();
@@ -39,11 +41,16 @@ namespace NightfallArenaBuilder
 
         private void BuildUi()
         {
+            var header = new Panel();
+            header.Dock = DockStyle.Top;
+            header.Height = 98;
+            header.Padding = new Padding(10);
+            header.BackColor = Color.FromArgb(244, 247, 250);
+
             var top = new FlowLayoutPanel();
             top.Dock = DockStyle.Top;
-            top.Height = 46;
-            top.Padding = new Padding(8, 8, 8, 6);
-            top.BackColor = Color.FromArgb(28, 32, 36);
+            top.Height = 42;
+            top.BackColor = Color.FromArgb(244, 247, 250);
 
             AddButton(top, "Reload", LoadConfig);
             AddButton(top, "Validate", ValidateConfig);
@@ -54,46 +61,68 @@ namespace NightfallArenaBuilder
             AddButton(top, "Open Folder", OpenFolder);
             AddButton(top, "Push Pages", PushPages);
 
+            var help = new Label();
+            help.Dock = DockStyle.Fill;
+            help.Padding = new Padding(4, 8, 4, 0);
+            help.Font = new Font("Segoe UI", 11, FontStyle.Regular);
+            help.ForeColor = Color.FromArgb(35, 40, 45);
+            help.Text = "Beginner mode: change values on the right, click Save, then click Build Game EXE. " +
+                "Use Open Build to find the playable EXE. If you break the JSON, Validate will tell you before saving.";
+
+            header.Controls.Add(help);
+            header.Controls.Add(top);
+
             var split = new SplitContainer();
             split.Dock = DockStyle.Fill;
-            split.SplitterDistance = 280;
+            split.SplitterDistance = 340;
+            split.Panel1MinSize = 260;
+            split.Panel2MinSize = 360;
 
             outline = new TreeView();
             outline.Dock = DockStyle.Fill;
-            outline.Font = new Font("Segoe UI", 10);
+            outline.Font = new Font("Segoe UI", 12);
+            outline.BackColor = Color.White;
+            outline.ForeColor = Color.FromArgb(25, 30, 35);
             split.Panel1.Controls.Add(outline);
 
             editor = new TextBox();
             editor.AcceptsReturn = true;
             editor.AcceptsTab = true;
             editor.Dock = DockStyle.Fill;
-            editor.Font = new Font("Consolas", 11);
+            editor.Font = new Font("Consolas", 13);
             editor.Multiline = true;
             editor.ScrollBars = ScrollBars.Both;
             editor.WordWrap = false;
+            editor.BackColor = Color.White;
+            editor.ForeColor = Color.Black;
             split.Panel2.Controls.Add(editor);
 
             status = new TextBox();
             status.Dock = DockStyle.Bottom;
-            status.Height = 110;
+            status.Height = 130;
             status.Multiline = true;
             status.ReadOnly = true;
             status.ScrollBars = ScrollBars.Vertical;
-            status.BackColor = Color.FromArgb(18, 20, 22);
-            status.ForeColor = Color.WhiteSmoke;
-            status.Font = new Font("Consolas", 9);
+            status.BackColor = Color.FromArgb(250, 252, 255);
+            status.ForeColor = Color.FromArgb(25, 30, 35);
+            status.Font = new Font("Consolas", 11);
 
             Controls.Add(split);
             Controls.Add(status);
-            Controls.Add(top);
+            Controls.Add(header);
         }
 
         private void AddButton(FlowLayoutPanel panel, string label, Action action)
         {
             var button = new Button();
             button.Text = label;
-            button.Width = 112;
-            button.Height = 30;
+            button.Width = 128;
+            button.Height = 34;
+            button.Margin = new Padding(0, 0, 8, 0);
+            button.BackColor = Color.White;
+            button.ForeColor = Color.Black;
+            button.FlatStyle = FlatStyle.Standard;
+            button.Font = new Font("Segoe UI", 9, FontStyle.Bold);
             button.Click += delegate { action(); };
             panel.Controls.Add(button);
         }
