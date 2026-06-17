@@ -75,8 +75,6 @@ namespace NightfallArenaBuilder
             var split = new SplitContainer();
             split.Dock = DockStyle.Fill;
             split.SplitterDistance = 340;
-            split.Panel1MinSize = 260;
-            split.Panel2MinSize = 360;
 
             outline = new TreeView();
             outline.Dock = DockStyle.Fill;
@@ -346,9 +344,16 @@ namespace NightfallArenaBuilder
         [STAThread]
         public static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new BuilderForm());
+            try
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new BuilderForm());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Nightfall Arena Builder crashed");
+            }
         }
     }
 }
