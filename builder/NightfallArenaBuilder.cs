@@ -49,6 +49,8 @@ namespace NightfallArenaBuilder
             AddButton(top, "Validate", ValidateConfig);
             AddButton(top, "Save", SaveConfig);
             AddButton(top, "Open Game", OpenGame);
+            AddButton(top, "Build Game EXE", BuildGameExe);
+            AddButton(top, "Open Build", OpenBuildFolder);
             AddButton(top, "Open Folder", OpenFolder);
             AddButton(top, "Push Pages", PushPages);
 
@@ -207,6 +209,71 @@ namespace NightfallArenaBuilder
             Process.Start(root);
         }
 
+        private void OpenBuildFolder()
+        {
+            string buildRoot = Path.Combine(root, "dist", "NightfallArenaGame");
+            Directory.CreateDirectory(buildRoot);
+            Process.Start(buildRoot);
+        }
+
+        private void BuildGameExe()
+        {
+            SaveConfig();
+
+            string buildRoot = Path.Combine(root, "dist", "NightfallArenaGame");
+            string wwwRoot = Path.Combine(buildRoot, "www");
+            Directory.CreateDirectory(wwwRoot);
+
+            CopyFile("index.html", wwwRoot);
+            CopyFile("style.css", wwwRoot);
+            CopyFile("game.js", wwwRoot);
+            CopyFile("game-config.json", wwwRoot);
+            CopyFile("game-config.js", wwwRoot);
+            CopyFolderIfExists("assets", Path.Combine(wwwRoot, "assets"));
+
+            string csc = @"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe";
+            if (!File.Exists(csc)) csc = @"C:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe";
+            if (!File.Exists(csc))
+            {
+                Log("Could not find the Windows C# compiler, so I could not build the game EXE.");
+                return;
+            }
+
+            string source = Path.Combine(root, "builder", "NightfallArenaGameLauncher.cs");
+            string output = Path.Combine(buildRoot, "NightfallArenaGame.exe");
+            RunProcess(csc, "/target:winexe /platform:anycpu /out:\"" + output + "\" /r:System.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll \"" + source + "\"", root);
+            Log("Built game EXE here: " + output);
+        }
+
+        private void CopyFile(string fileName, string destinationFolder)
+        {
+            string source = Path.Combine(root, fileName);
+            if (!File.Exists(source))
+            {
+                Log("Skipped missing file: " + fileName);
+                return;
+            }
+
+            File.Copy(source, Path.Combine(destinationFolder, fileName), true);
+        }
+
+        private void CopyFolderIfExists(string folderName, string destination)
+        {
+            string source = Path.Combine(root, folderName);
+            if (!Directory.Exists(source)) return;
+
+            if (Directory.Exists(destination)) Directory.Delete(destination, true);
+            Directory.CreateDirectory(destination);
+            foreach (string directory in Directory.GetDirectories(source, "*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(directory.Replace(source, destination));
+            }
+            foreach (string file in Directory.GetFiles(source, "*", SearchOption.AllDirectories))
+            {
+                File.Copy(file, file.Replace(source, destination), true);
+            }
+        }
+
         private void PushPages()
         {
             SaveConfig();
@@ -217,10 +284,15 @@ namespace NightfallArenaBuilder
 
         private void RunGit(string args)
         {
+            RunProcess("git", args, gitPath);
+        }
+
+        private void RunProcess(string fileName, string args, string workingDirectory)
+        {
             try
             {
-                var start = new ProcessStartInfo("git", args);
-                start.WorkingDirectory = gitPath;
+                var start = new ProcessStartInfo(fileName, args);
+                start.WorkingDirectory = workingDirectory;
                 start.UseShellExecute = false;
                 start.RedirectStandardOutput = true;
                 start.RedirectStandardError = true;
@@ -229,11 +301,11 @@ namespace NightfallArenaBuilder
                 string output = process.StandardOutput.ReadToEnd();
                 string error = process.StandardError.ReadToEnd();
                 process.WaitForExit();
-                Log("> git " + args + Environment.NewLine + output + error);
+                Log("> " + fileName + " " + args + Environment.NewLine + output + error);
             }
             catch (Exception ex)
             {
-                Log("Git failed: " + ex.Message);
+                Log(fileName + " failed: " + ex.Message);
             }
         }
 
